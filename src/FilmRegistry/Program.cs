@@ -24,5 +24,6 @@ catch (SqlException exception)
     return;
 }
 
+using var context = new FilmRegistryContext(connectionString);
 var repository = new MovieRepository(connectionString);
-new FilmMenu(repository).Run();
+new FilmMenu(repository, context).Run();

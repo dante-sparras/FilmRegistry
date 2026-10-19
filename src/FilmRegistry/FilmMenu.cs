@@ -6,10 +6,12 @@ namespace FilmRegistry;
 public sealed class FilmMenu
 {
     private readonly MovieRepository _repository;
+    private readonly FilmRegistryContext _context;
 
-    public FilmMenu(MovieRepository repository)
+    public FilmMenu(MovieRepository repository, FilmRegistryContext context)
     {
         _repository = repository;
+        _context = context;
     }
 
     public void Run()
@@ -61,7 +63,7 @@ public sealed class FilmMenu
     {
         Clear();
         Heading("All movies");
-        ShowMovies(_repository.GetAll(), "No movies.");
+        ShowMovies(_context.ListMovies(), "No movies.");
     }
 
     private void SearchMovies()
