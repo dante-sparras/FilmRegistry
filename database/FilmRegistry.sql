@@ -1,5 +1,5 @@
--- Creates the FilmRegistry database, Genre and Movie, and the sample rows.
--- Run this in SQL Server Management Studio or with sqlcmd.
+-- The console app creates this database and sample data on startup when they are missing.
+-- You can also run this script in SQL Server Management Studio or with sqlcmd.
 
 IF DB_ID(N'FilmRegistry') IS NULL
     CREATE DATABASE FilmRegistry;

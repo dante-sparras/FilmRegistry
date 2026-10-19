@@ -14,17 +14,17 @@ if (string.IsNullOrWhiteSpace(connectionString))
     return;
 }
 
-var repository = new MovieRepository(connectionString);
-
 try
 {
-    repository.Connect();
+    new DatabaseInitializer(connectionString).EnsureCreated();
 }
 catch (SqlException exception)
 {
-    Console.WriteLine($"Kunde inte ansluta till databasen: {exception.Message}");
+    Console.WriteLine($"Kunde inte förbereda databasen: {exception.Message}");
     return;
 }
+
+var repository = new MovieRepository(connectionString);
 
 Console.WriteLine("Ansluten till databasen.");
 new FilmMenu(repository).Run();

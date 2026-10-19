@@ -18,25 +18,6 @@ public sealed class MovieRepository
         _connectionString = connectionString;
     }
 
-    public void Connect()
-    {
-        Execute(
-            """
-            SELECT Name
-            FROM dbo.Genre
-            WHERE Name = @name;
-            """,
-            parameters => parameters.Add(new SqlParameter("@name", "Sci-Fi")),
-            command =>
-            {
-                using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    reader.GetString(0);
-                }
-            });
-    }
-
     public IReadOnlyList<Movie> GetAll()
     {
         return ReadMovies($"{MovieSelect} ORDER BY m.ReleaseYear, m.Title;");
