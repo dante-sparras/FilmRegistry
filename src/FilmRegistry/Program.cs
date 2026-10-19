@@ -25,6 +25,4 @@ catch (SqlException exception)
 }
 
 var repository = new MovieRepository(connectionString);
-
-Console.WriteLine("Ansluten till databasen.");
 new FilmMenu(repository).Run();
