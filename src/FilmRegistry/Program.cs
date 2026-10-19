@@ -10,7 +10,7 @@ var configuration = new ConfigurationBuilder()
 var connectionString = configuration.GetConnectionString("FilmRegistry");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    Console.WriteLine("ConnectionStrings:FilmRegistry saknas i appsettings.json.");
+    Console.WriteLine("ConnectionStrings:FilmRegistry is missing from appsettings.json.");
     return;
 }
 
@@ -20,7 +20,7 @@ try
 }
 catch (SqlException exception)
 {
-    Console.WriteLine($"Kunde inte förbereda databasen: {exception.Message}");
+    Console.WriteLine($"Could not prepare the database: {exception.Message}");
     return;
 }
 

@@ -44,13 +44,13 @@ public sealed class FilmMenu
                         DeleteMovie();
                         break;
                     default:
-                        Message("Ogiltigt val.", ConsoleColor.Red);
+                        Message("Invalid choice.", ConsoleColor.Red);
                         break;
                 }
             }
             catch (SqlException exception)
             {
-                Message($"Databasfel: {exception.Message}", ConsoleColor.Red);
+                Message($"Database error: {exception.Message}", ConsoleColor.Red);
             }
 
             Pause();
@@ -60,47 +60,47 @@ public sealed class FilmMenu
     private void ShowAll()
     {
         Clear();
-        Heading("Alla filmer");
-        ShowMovies(_repository.GetAll(), "Inga filmer.");
+        Heading("All movies");
+        ShowMovies(_repository.GetAll(), "No movies.");
     }
 
     private void SearchMovies()
     {
         Clear();
-        Heading("Sök filmer efter genre");
+        Heading("Search movies by genre");
         Write("  Genre: ");
-        ShowMovies(_repository.SearchByGenre(Console.ReadLine() ?? ""), "Inga filmer i den genren.");
+        ShowMovies(_repository.SearchByGenre(Console.ReadLine() ?? ""), "No movies in that genre.");
     }
 
     private void AddMovie()
     {
         Clear();
-        Heading("Lägg till film");
+        Heading("Add movie");
 
-        Write("  Titel: ");
+        Write("  Title: ");
         var title = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(title))
         {
-            Message("Titeln kan inte vara tom.", ConsoleColor.Red);
+            Message("The title cannot be empty.", ConsoleColor.Red);
             return;
         }
 
-        Write("  År: ");
+        Write("  Year: ");
         if (!int.TryParse(Console.ReadLine(), out var releaseYear))
         {
-            Message("Ogiltigt år.", ConsoleColor.Red);
+            Message("Invalid year.", ConsoleColor.Red);
             return;
         }
 
         var genres = _repository.GetGenres();
         if (genres.Count == 0)
         {
-            Message("Det finns inga genrer att koppla filmen till.", ConsoleColor.Red);
+            Message("There are no genres to attach the movie to.", ConsoleColor.Red);
             return;
         }
 
         WriteLine();
-        WriteLine("  Genrer", ConsoleColor.DarkCyan);
+        WriteLine("  Genres", ConsoleColor.DarkCyan);
         foreach (var genre in genres)
         {
             WriteLine($"    {genre}");
@@ -111,20 +111,20 @@ public sealed class FilmMenu
         var genreName = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(genreName) || !_repository.Add(title, releaseYear, genreName))
         {
-            Message("Genren finns inte. Filmen lades inte till.", ConsoleColor.Red);
+            Message("That genre does not exist. The movie was not added.", ConsoleColor.Red);
             return;
         }
 
-        Message("Filmen lades till.", ConsoleColor.Green);
+        Message("The movie was added.", ConsoleColor.Green);
     }
 
     private void DeleteMovie()
     {
         Clear();
-        Heading("Ta bort film");
+        Heading("Delete movie");
 
         var movies = _repository.GetAll();
-        ShowMovies(movies, "Inga filmer att ta bort.");
+        ShowMovies(movies, "No movies to delete.");
         if (movies.Count == 0)
         {
             return;
@@ -133,13 +133,13 @@ public sealed class FilmMenu
         Write("  Id: ");
         if (!int.TryParse(Console.ReadLine(), out var id))
         {
-            Message("Ogiltigt id.", ConsoleColor.Red);
+            Message("Invalid id.", ConsoleColor.Red);
             return;
         }
 
         var deleted = _repository.Delete(id);
         Message(
-            deleted ? "Filmen togs bort." : "Ingen film med det id:t.",
+            deleted ? "The movie was deleted." : "No movie has that id.",
             deleted ? ConsoleColor.Green : ConsoleColor.Red);
     }
 
@@ -152,12 +152,12 @@ public sealed class FilmMenu
         }
 
         var idWidth = Math.Max(2, movies.Max(movie => movie.Id.ToString().Length));
-        var titleWidth = Math.Max("Titel".Length, movies.Max(movie => movie.Title.Length));
+        var titleWidth = Math.Max("Title".Length, movies.Max(movie => movie.Title.Length));
         var genreWidth = Math.Max("Genre".Length, movies.Max(movie => movie.Genre.Length));
 
         WriteLine();
         WriteLine(
-            $"  {"Id".PadLeft(idWidth)}  {"Titel".PadRight(titleWidth)}  År    {"Genre".PadRight(genreWidth)}",
+            $"  {"Id".PadLeft(idWidth)}  {"Title".PadRight(titleWidth)}  Year  {"Genre".PadRight(genreWidth)}",
             ConsoleColor.DarkCyan);
         WriteLine(
             $"  {new string('─', idWidth)}  {new string('─', titleWidth)}  ────  {new string('─', genreWidth)}",
@@ -172,13 +172,13 @@ public sealed class FilmMenu
         }
 
         WriteLine();
-        var label = movies.Count == 1 ? "1 film" : $"{movies.Count} filmer";
+        var label = movies.Count == 1 ? "1 movie" : $"{movies.Count} movies";
         WriteLine($"  {label}", ConsoleColor.DarkGray);
     }
 
     private void DrawMenu()
     {
-        const string title = "FILMREGISTER";
+        const string title = "FILM REGISTRY";
         const int width = 34;
         var line = new string('─', width);
 
@@ -186,15 +186,15 @@ public sealed class FilmMenu
         WriteLine($"  ┌{line}┐", ConsoleColor.Cyan);
         WriteLine($"  │{title.PadLeft((width + title.Length) / 2).PadRight(width)}│", ConsoleColor.Cyan);
         WriteLine($"  └{line}┘", ConsoleColor.Cyan);
-        WriteLine("  Ansluten till databasen.", ConsoleColor.DarkGray);
+        WriteLine("  Connected to the database.", ConsoleColor.DarkGray);
         WriteLine();
-        WriteMenuItem("1", "Visa alla filmer");
-        WriteMenuItem("2", "Sök filmer efter genre");
-        WriteMenuItem("3", "Lägg till film");
-        WriteMenuItem("4", "Ta bort film");
-        WriteMenuItem("0", "Avsluta");
+        WriteMenuItem("1", "Show all movies");
+        WriteMenuItem("2", "Search movies by genre");
+        WriteMenuItem("3", "Add movie");
+        WriteMenuItem("4", "Delete movie");
+        WriteMenuItem("0", "Exit");
         WriteLine();
-        Write("  Välj: ", ConsoleColor.Cyan);
+        Write("  Choose: ", ConsoleColor.Cyan);
     }
 
     private static void WriteMenuItem(string key, string label)
@@ -220,7 +220,7 @@ public sealed class FilmMenu
     private static void Pause()
     {
         WriteLine();
-        Write("  Tryck Enter för att fortsätta...", ConsoleColor.DarkGray);
+        Write("  Press Enter to continue...", ConsoleColor.DarkGray);
         Console.ReadLine();
     }
 

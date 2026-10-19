@@ -17,7 +17,7 @@ public sealed class DatabaseInitializer
         var builder = new SqlConnectionStringBuilder(_connectionString);
         if (string.IsNullOrWhiteSpace(builder.InitialCatalog))
         {
-            throw new InvalidOperationException("Anslutningssträngen saknar ett databasnamn.");
+            throw new InvalidOperationException("The connection string is missing a database name.");
         }
 
         CreateDatabase(builder);
