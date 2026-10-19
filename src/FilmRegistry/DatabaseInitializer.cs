@@ -73,40 +73,76 @@ public sealed class DatabaseInitializer
             """);
     }
 
+    private static readonly string[] GenreNames = ["Sci-Fi", "Horror", "Action", "Comedy"];
+
+    private static readonly (string Title, int ReleaseYear, string Genre)[] Movies =
+    [
+        ("Alien", 1979, "Sci-Fi"),
+        ("Blade Runner", 1982, "Sci-Fi"),
+        ("The Matrix", 1999, "Sci-Fi"),
+        ("Children of Men", 2006, "Sci-Fi"),
+        ("Ex Machina", 2014, "Sci-Fi"),
+        ("Interstellar", 2014, "Sci-Fi"),
+        ("Arrival", 2016, "Sci-Fi"),
+        ("The Exorcist", 1973, "Horror"),
+        ("Halloween", 1978, "Horror"),
+        ("The Shining", 1980, "Horror"),
+        ("A Nightmare on Elm Street", 1984, "Horror"),
+        ("Get Out", 2017, "Horror"),
+        ("Hereditary", 2018, "Horror"),
+        ("Raiders of the Lost Ark", 1981, "Action"),
+        ("Die Hard", 1988, "Action"),
+        ("Terminator 2: Judgment Day", 1991, "Action"),
+        ("The Raid", 2011, "Action"),
+        ("John Wick", 2014, "Action"),
+        ("Mad Max: Fury Road", 2015, "Action"),
+        ("Some Like It Hot", 1959, "Comedy"),
+        ("Monty Python and the Holy Grail", 1975, "Comedy"),
+        ("Groundhog Day", 1993, "Comedy"),
+        ("Superbad", 2007, "Comedy"),
+        ("Bridesmaids", 2011, "Comedy"),
+        ("The Grand Budapest Hotel", 2014, "Comedy"),
+    ];
+
     private void Seed()
     {
-        Execute(
-            """
-            IF NOT EXISTS (SELECT 1 FROM dbo.Genre)
-            BEGIN
-                INSERT INTO dbo.Genre (Name)
-                VALUES (@sciFi), (@horror), (@action);
-            END
+        using var connection = new SqlConnection(_connectionString);
+        connection.Open();
 
-            IF NOT EXISTS (SELECT 1 FROM dbo.Movie)
-            BEGIN
-                INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
-                SELECT @alienTitle, @alienYear, Id FROM dbo.Genre WHERE Name = @sciFi;
+        foreach (var genre in GenreNames)
+        {
+            Execute(
+                connection,
+                """
+                IF NOT EXISTS (SELECT 1 FROM dbo.Genre WHERE Name = @name)
+                    INSERT INTO dbo.Genre (Name) VALUES (@name);
+                """,
+                parameters => parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar, 100) { Value = genre }));
+        }
 
-                INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
-                SELECT @shiningTitle, @shiningYear, Id FROM dbo.Genre WHERE Name = @horror;
+        foreach (var movie in Movies)
+        {
+            Execute(
+                connection,
+                """
+                IF NOT EXISTS (SELECT 1 FROM dbo.Movie WHERE Title = @title)
+                    INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
+                    SELECT @title, @releaseYear, Id FROM dbo.Genre WHERE Name = @genre;
+                """,
+                parameters =>
+                {
+                    parameters.Add(new SqlParameter("@title", SqlDbType.NVarChar, 200) { Value = movie.Title });
+                    parameters.Add(new SqlParameter("@releaseYear", SqlDbType.Int) { Value = movie.ReleaseYear });
+                    parameters.Add(new SqlParameter("@genre", SqlDbType.NVarChar, 100) { Value = movie.Genre });
+                });
+        }
+    }
 
-                INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
-                SELECT @dieHardTitle, @dieHardYear, Id FROM dbo.Genre WHERE Name = @action;
-            END
-            """,
-            parameters =>
-            {
-                parameters.Add(new SqlParameter("@sciFi", SqlDbType.NVarChar, 100) { Value = "Sci-Fi" });
-                parameters.Add(new SqlParameter("@horror", SqlDbType.NVarChar, 100) { Value = "Horror" });
-                parameters.Add(new SqlParameter("@action", SqlDbType.NVarChar, 100) { Value = "Action" });
-                parameters.Add(new SqlParameter("@alienTitle", SqlDbType.NVarChar, 200) { Value = "Alien" });
-                parameters.Add(new SqlParameter("@alienYear", SqlDbType.Int) { Value = 1979 });
-                parameters.Add(new SqlParameter("@shiningTitle", SqlDbType.NVarChar, 200) { Value = "The Shining" });
-                parameters.Add(new SqlParameter("@shiningYear", SqlDbType.Int) { Value = 1980 });
-                parameters.Add(new SqlParameter("@dieHardTitle", SqlDbType.NVarChar, 200) { Value = "Die Hard" });
-                parameters.Add(new SqlParameter("@dieHardYear", SqlDbType.Int) { Value = 1988 });
-            });
+    private static void Execute(SqlConnection connection, string sql, Action<SqlParameterCollection> addParameters)
+    {
+        using var command = new SqlCommand(sql, connection);
+        addParameters(command.Parameters);
+        command.ExecuteNonQuery();
     }
 
     private void Execute(string sql, Action<SqlParameterCollection>? addParameters = null)

@@ -30,22 +30,56 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.Genre)
-BEGIN
-    INSERT INTO dbo.Genre (Name)
-    VALUES
-        (N'Sci-Fi'),
-        (N'Horror'),
-        (N'Action');
-END
+INSERT INTO dbo.Genre (Name)
+SELECT Seed.Name
+FROM (VALUES
+    (N'Sci-Fi'),
+    (N'Horror'),
+    (N'Action'),
+    (N'Comedy')
+) AS Seed (Name)
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Genre
+    WHERE Genre.Name = Seed.Name
+);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.Movie)
-BEGIN
-    INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
-    VALUES
-        (N'Alien', 1979, (SELECT Id FROM dbo.Genre WHERE Name = N'Sci-Fi')),
-        (N'The Shining', 1980, (SELECT Id FROM dbo.Genre WHERE Name = N'Horror')),
-        (N'Die Hard', 1988, (SELECT Id FROM dbo.Genre WHERE Name = N'Action'));
-END
+INSERT INTO dbo.Movie (Title, ReleaseYear, GenreId)
+SELECT Seed.Title, Seed.ReleaseYear, Genre.Id
+FROM (VALUES
+    (N'Alien', 1979, N'Sci-Fi'),
+    (N'Blade Runner', 1982, N'Sci-Fi'),
+    (N'The Matrix', 1999, N'Sci-Fi'),
+    (N'Children of Men', 2006, N'Sci-Fi'),
+    (N'Ex Machina', 2014, N'Sci-Fi'),
+    (N'Interstellar', 2014, N'Sci-Fi'),
+    (N'Arrival', 2016, N'Sci-Fi'),
+    (N'The Exorcist', 1973, N'Horror'),
+    (N'Halloween', 1978, N'Horror'),
+    (N'The Shining', 1980, N'Horror'),
+    (N'A Nightmare on Elm Street', 1984, N'Horror'),
+    (N'Get Out', 2017, N'Horror'),
+    (N'Hereditary', 2018, N'Horror'),
+    (N'Raiders of the Lost Ark', 1981, N'Action'),
+    (N'Die Hard', 1988, N'Action'),
+    (N'Terminator 2: Judgment Day', 1991, N'Action'),
+    (N'The Raid', 2011, N'Action'),
+    (N'John Wick', 2014, N'Action'),
+    (N'Mad Max: Fury Road', 2015, N'Action'),
+    (N'Some Like It Hot', 1959, N'Comedy'),
+    (N'Monty Python and the Holy Grail', 1975, N'Comedy'),
+    (N'Groundhog Day', 1993, N'Comedy'),
+    (N'Superbad', 2007, N'Comedy'),
+    (N'Bridesmaids', 2011, N'Comedy'),
+    (N'The Grand Budapest Hotel', 2014, N'Comedy')
+) AS Seed (Title, ReleaseYear, GenreName)
+INNER JOIN dbo.Genre ON Genre.Name = Seed.GenreName
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.Movie
+    WHERE Movie.Title = Seed.Title
+);
 GO
