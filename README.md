@@ -5,6 +5,16 @@
 - .NET 10 SDK
 - SQL Server running on `localhost`
 
+## Stack
+
+| Part | Technology |
+| --- | --- |
+| Language | C# |
+| Runtime | .NET 10 |
+| Database | SQL Server |
+| Data access | ADO.NET (`Microsoft.Data.SqlClient`), Entity Framework Core, and LINQ |
+| Configuration | `appsettings.json` |
+
 ## Features
 
 - List movies with their genre, and search by genre name.
@@ -12,3 +22,17 @@
 - Creates a database with 25 sample movies across 4 genres on startup when missing.
 
 The list uses Entity Framework and LINQ. Search, add, and delete use parameterized ADO.NET.
+
+## Running
+
+### Terminal
+
+From the repository folder:
+
+```powershell
+dotnet run --project src/FilmRegistry/FilmRegistry.csproj
+```
+
+### Visual Studio
+
+Open `FilmRegistry.slnx` and press F5.
