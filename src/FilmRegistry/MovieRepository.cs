@@ -42,6 +42,24 @@ public sealed class MovieRepository
         return ReadMovies($"{MovieSelect} ORDER BY m.ReleaseYear, m.Title;");
     }
 
+    public IReadOnlyList<string> GetGenres()
+    {
+        var genres = new List<string>();
+        Execute(
+            "SELECT Name FROM dbo.Genre ORDER BY Name;",
+            _ => { },
+            command =>
+            {
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    genres.Add(reader.GetString(0));
+                }
+            });
+
+        return genres;
+    }
+
     public IReadOnlyList<Movie> SearchByGenre(string genre)
     {
         if (string.IsNullOrWhiteSpace(genre))

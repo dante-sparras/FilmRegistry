@@ -39,18 +39,119 @@ while (true)
     Console.WriteLine("0. Avsluta");
     Console.Write("Välj: ");
 
-    switch (Console.ReadLine())
+    var choice = Console.ReadLine();
+    if (choice is null)
     {
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-            Console.WriteLine("Den här funktionen är inte kopplad till databasen ännu.");
-            break;
-        case "0":
-            return;
-        default:
-            Console.WriteLine("Ogiltigt val.");
-            break;
+        return;
     }
+
+    try
+    {
+        switch (choice.Trim())
+        {
+            case "1":
+                ShowMovies(repository.GetAll(), "Inga filmer.");
+                break;
+            case "2":
+                SearchMovies();
+                break;
+            case "3":
+                AddMovie();
+                break;
+            case "4":
+                DeleteMovie();
+                break;
+            case "0":
+                return;
+            default:
+                Console.WriteLine("Ogiltigt val.");
+                break;
+        }
+    }
+    catch (SqlException exception)
+    {
+        Console.WriteLine($"Databasfel: {exception.Message}");
+    }
+}
+
+void ShowMovies(IReadOnlyList<Movie> movies, string emptyMessage)
+{
+    if (movies.Count == 0)
+    {
+        Console.WriteLine(emptyMessage);
+        return;
+    }
+
+    foreach (var movie in movies)
+    {
+        Console.WriteLine($"{movie.Id}. {movie}");
+    }
+}
+
+void SearchMovies()
+{
+    Console.Write("Genre: ");
+    ShowMovies(repository.SearchByGenre(Console.ReadLine() ?? ""), "Inga filmer i den genren.");
+}
+
+void AddMovie()
+{
+    Console.Write("Titel: ");
+    var title = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        Console.WriteLine("Titeln kan inte vara tom.");
+        return;
+    }
+
+    Console.Write("År: ");
+    if (!int.TryParse(Console.ReadLine(), out var releaseYear))
+    {
+        Console.WriteLine("Ogiltigt år.");
+        return;
+    }
+
+    var genres = repository.GetGenres();
+    if (genres.Count == 0)
+    {
+        Console.WriteLine("Det finns inga genrer att koppla filmen till.");
+        return;
+    }
+
+    Console.WriteLine("Befintliga genrer:");
+    foreach (var genre in genres)
+    {
+        Console.WriteLine($"- {genre}");
+    }
+
+    Console.Write("Genre: ");
+    var genreName = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(genreName) || !repository.Add(title, releaseYear, genreName))
+    {
+        Console.WriteLine("Genren finns inte. Filmen lades inte till.");
+        return;
+    }
+
+    Console.WriteLine("Filmen lades till.");
+}
+
+void DeleteMovie()
+{
+    var movies = repository.GetAll();
+    ShowMovies(movies, "Inga filmer att ta bort.");
+    if (movies.Count == 0)
+    {
+        return;
+    }
+
+    Console.Write("Id: ");
+    if (!int.TryParse(Console.ReadLine(), out var id))
+    {
+        Console.WriteLine("Ogiltigt id.");
+        return;
+    }
+
+    Console.WriteLine(repository.Delete(id)
+        ? "Filmen togs bort."
+        : "Ingen film med det id:t.");
 }
